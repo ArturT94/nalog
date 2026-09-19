@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>НалогФлоу — налоговые вычеты под ключ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/imask@6"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1a1a2e;
+      --primary-light: #16213e;
+      --accent: #E8602E;
+      --accent-hover: #d45526;
+      --teal: #0EA5A0;
+      --bg: #FAFBFC;
+      --dark: #0F0F1A;
+      --card-bg: #FFFFFF;
+      --text: #1a1a2e;
+      --text-secondary: #6B7280;
+      --border: #E8E8EC;
+      --radius: 20px;
+      --radius-sm: 12px;
+      --radius-xs: 8px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+      --shadow: 0 4px 20px rgba(0,0,0,.08);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,.12);
+      --shadow-accent: 0 8px 30px rgba(232,96,46,.25);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+    h1,h2,h3,h4,h5,h6 { font-family: 'Montserrat', sans-serif; }
+
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+    /* ===== NAV ===== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(15,15,26,.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      transition: background .3s;
+    }
+    nav .container { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+    .logo { font-size: 1.5rem; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -.5px; font-family: 'Montserrat', sans-serif; }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+    .nav-links a { text-decoration: none; color: rgba(255,255,255,.65); font-weight: 500; font-size: .9rem; transition: color .2s; font-family: 'Inter', sans-serif; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta { background: var(--accent) !important; color: #fff !important; padding: 10px 22px; border-radius: var(--radius-xs); font-weight: 600 !important; cursor: pointer; text-decoration: none; border: none; font-family: inherit; font-size: .9rem; }
+    .nav-cta:hover { background: var(--accent-hover) !important; }
+
+    /* ===== HERO ===== */
+    .hero {
+      padding: 150px 0 100px;
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(232,96,46,.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(14,165,160,.08) 0%, transparent 50%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-row { display: grid; grid-template-columns: 1.1fr .9fr; gap: 60px; align-items: center; }
+    .hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 900; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; color: #fff; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 1.1rem; color: rgba(255,255,255,.6); max-width: 500px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* Search widget */
+    .search-widget {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 8px;
+      display: flex;
+      gap: 4px;
+      max-width: 500px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    }
+    .search-widget input {
+      flex: 1;
+      border: none;
+      padding: 14px 16px;
+      font-size: .95rem;
+      font-family: inherit;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+    }
+    .search-widget input::placeholder { color: #9CA3AF; }
+    .search-widget button {
+      padding: 14px 28px;
+      border: none;
+      border-radius: var(--radius-xs);
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: .9rem;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .search-widget button:hover { background: var(--accent-hover); }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(232,96,46,.12);
+      border: 1px solid rgba(232,96,46,.25);
+      color: var(--accent);
+      padding: 8px 18px; border-radius: 100px;
+      font-size: .825rem; font-weight: 600; margin-bottom: 24px;
+    }
+    .hero-badge svg { width: 14px; height: 14px; }
+
+    /* Hero visual */
+    .hero-visual {
+      position: relative;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .hero-card-stack {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+    }
+    .hero-card-main {
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      padding: 32px;
+      color: #fff;
+      position: relative; z-index: 2;
+    }
+    .hero-card-main h4 { font-size: .8rem; font-weight: 500; color: rgba(255,255,255,.5); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .hero-card-main .big-num { font-size: 2.8rem; font-weight: 900; font-family: 'Montserrat', sans-serif; }
+    .hero-card-main .big-num span { color: var(--accent); }
+    .hero-card-main .desc { font-size: .875rem; color: rgba(255,255,255,.5); margin-top: 4px; }
+
+    /* Floating particles */
+    .particles { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+    .particle {
+      position: absolute;
+      width: 4px; height: 4px;
+      background: rgba(232,96,46,.25);
+      border-radius: 50%;
+      animation: particleFloat linear infinite;
+    }
+    @keyframes particleFloat {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    /* Float animation for hero cards */
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .hero-card-main { animation: floatY 5s ease-in-out infinite; }
+    .hero-card-float { animation: floatY 4s ease-in-out infinite reverse; }
+    .hero-card-float.float-1 { animation-delay: -1s; }
+    .hero-card-float.float-2 { animation-delay: -2.5s; }
+
+    /* Pulse on CTA */
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 4px 14px rgba(232,96,46,.3); }
+      50% { box-shadow: 0 4px 28px rgba(232,96,46,.55); }
+    }
+    .nav-cta, .search-widget button, .form-section .btn {
+      animation: ctaPulse 2.5s ease-in-out infinite;
+    }
+
+    /* Gradient shift on hero bg */
+    @keyframes gradientShift {
+      0%, 100% { opacity: .8; }
+      50% { opacity: 1; }
+    }
+    .hero-bg { animation: gradientShift 8s ease-in-out infinite; }
+
+    /* Scale in for stat numbers */
+    @keyframes scaleIn {
+      0% { transform: scale(.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Slide up for elements */
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Scroll indicator bounce */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+
+    /* Shimmer line */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer-line {
+      height: 2px;
+      max-width: 80px;
+      margin: 0 auto 36px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity .3s ease, visibility .3s;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-box {
+      background: linear-gradient(160deg, #0F0F1A 0%, #1a1a2e 50%, #16213e 100%);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      max-width: 480px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+      position: relative;
+      transform: scale(.9) translateY(20px);
+      transition: transform .3s ease;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
+    .modal-close {
+      position: absolute; top: 16px; right: 20px;
+      width: 36px; height: 36px;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      box-shadow: none;
+      font-size: 1.3rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: #fff;
+    }
+    .modal-title { font-size: 1.5rem; font-weight: 800; font-family: 'Montserrat', sans-serif; margin-bottom: 8px; color: #fff; }
+    .modal-subtitle { font-size: .9rem; color: rgba(255,255,255,.5); margin-bottom: 28px; }
+    .modal-box .form-group { margin-bottom: 16px; }
+    .modal-box .form-group label { color: rgba(255,255,255,.6); font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-family: 'Montserrat', sans-serif; }
+    .modal-box .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.06);
+      border-radius: var(--radius-xs);
+      font-size: .95rem; font-family: inherit; outline: none;
+      transition: border-color .2s, background .2s;
+      color: #fff;
+    }
+    .modal-box .form-group input::placeholder { color: rgba(255,255,255,.25); }
+    .modal-box .form-group input:focus { border-color: var(--accent); background: rgba(255,255,255,.1); }
+
+    /* Beautiful CTA button */
+    .modal-box .btn-primary {
+      width: 100%; margin-top: 12px;
+      padding: 16px;
+      border: none; border-radius: var(--radius-xs);
+      font-weight: 700; font-size: 1rem;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff; cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 20px rgba(232,96,46,.35);
+      letter-spacing: .3px;
+    }
+    .modal-box .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(232,96,46,.5);
+      background: linear-gradient(135deg, #d45526 0%, #F59E0B 100%);
+    }
+    .modal-box .btn-primary:active {
+      transform: translateY(0);
+    }
+    .modal-box .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s linear infinite;
+    }
+
+    /* Modal service list styles */
+    #modal-service-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      color: rgba(255,255,255,.8);
+      font-size: .95rem;
+    }
+    #modal-service-list li:last-child {
+      border-bottom: none;
+    }
+    #modal-service-section .btn-primary {
+      width: auto;
+      padding: 12px 24px;
+      margin-top: 20px;
+      font-size: .9rem;
+    }
+
+    /* Reveal helper */
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.revealed, .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .reveal.delay-1 { transition-delay: .1s; }
+    .reveal.delay-2 { transition-delay: .2s; }
+    .reveal.delay-3 { transition-delay: .3s; }
+    .reveal.delay-4 { transition-delay: .4s; }
+    .reveal.delay-5 { transition-delay: .5s; }
+    .reveal.delay-6 { transition-delay: .6s; }
+    .hero-card-float {
+      position: absolute;
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.2);
+      display: flex; align-items: center; gap: 12px;
+      font-size: .85rem; font-weight: 600; color: var(--text);
+    }
+    .hero-card-float.float-1 { top: -20px; right: -30px; z-index: 3; }
+    .hero-card-float.float-2 { bottom: -20px; left: -30px; z-index: 3; }
+    .float-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .float-icon.green { background: #ECFDF5; }
+    .float-icon.orange { background: #FFF7ED; }
+
+    /* ===== STATS ===== */
+    .stats { padding: 60px 0; background: var(--primary); }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+    .stat-item { text-align: center; color: #fff; }
+    .stat-num { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 900; font-family: 'Montserrat', sans-serif; letter-spacing: -1px; }
+    .stat-num span { color: var(--accent); }
+    .stat-label { font-size: .85rem; color: rgba(255,255,255,.5); margin-top: 4px; font-weight: 500; }
+
+    /* ===== SECTIONS COMMON ===== */
+    section { padding: 100px 0; }
+    .section-label {
+      display: inline-block; font-size: .75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 2.5px; color: var(--accent); margin-bottom: 14px;
+    }
+    .section-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; letter-spacing: -.5px; }
+    .section-subtitle { font-size: 1.05rem; color: var(--text-secondary); max-width: 580px; margin-bottom: 56px; line-height: 1.7; }
+    .center-text { text-align: center; }
+    .center-text .section-subtitle { margin-left: auto; margin-right: auto; }
+
+    /* About section */
+    .about-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .about-image {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    .about-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: var(--radius);
+    }
+    .about-content {
+      color: #fff;
+    }
+    .about-content h2 {
+      margin-bottom: 24px;
+    }
+    .about-text {
+      font-size: 1rem;
+      line-height: 1.8;
+      margin-bottom: 32px;
+    }
+    .about-text strong {
+      color: var(--accent);
+      display: block;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+    .about-list {
+      margin: 0 0 20px 24px;
+      padding: 0;
+      list-style: none;
+    }
+    .about-list li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .about-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .about-note {
+      font-size: .875rem;
+      color: rgba(255,255,255,.6);
+      line-height: 1.7;
+    }
+    .about-note a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    .about-note a:hover { text-decoration: none; }
+
+    /* Calculator section */
+    #calculator {
+      background: #fff;
+      padding: 80px 0;
+    }
+    #calculator .section-label { color: var(--accent); }
+    #calculator .section-title { color: var(--primary); }
+    #calculator .section-subtitle { color: var(--text-secondary); }
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .calc-service {
+      background: #f8fafc;
+      border-radius: var(--radius);
+      padding: 24px;
+      border: 1px solid var(--border);
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .calc-service:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+      border-color: var(--accent);
+    }
+    .calc-service.calc-service-featured {
+      border: 2px solid var(--accent);
+      background: linear-gradient(135deg, #fff7ed, #ffeedd);
+    }
+    .calc-badge {
+      position: absolute;
+      top: -10px; left: 20px;
+      background: var(--accent);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+    .calc-service { position: relative; }
+    .calc-checkbox {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .calc-checkbox input {
+      width: 18px;
+      height: 18px;
+      margin-right: 12px;
+      cursor: pointer;
+    }
+    .calc-checkbox label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .calc-price {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    .calc-desc {
+      font-size: .9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .calculator-total {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border-radius: var(--radius);
+      padding: 24px 32px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .total-label {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .total-price {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--accent);
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: -1px;
+    }
+
+    .total-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .total-label {
+      margin-bottom: 4px;
+    }
+
+    .calculator-total .btn-primary {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-xs);
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s ease;
+      box-shadow: 0 4px 20px rgba(232,96,46,.35);
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+    .calculator-total .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(232,96,46,.5);
+      background: linear-gradient(135deg, #d45526 0%, #F59E0B 100%);
+    }
+    .calculator-total .btn-primary:active {
+      transform: translateY(0);
+    }
+    .calculator-total .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s linear infinite;
+    }
+
+    .dark-section { background: var(--dark); color: #fff; }
+    .dark-section .section-subtitle { color: rgba(255,255,255,.5); }
+    .dark-section .section-label { color: var(--accent); }
+
+    /* ===== BENEFITS ===== */
+    .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .benefit-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 36px 30px; box-shadow: var(--shadow); border: 1px solid var(--border);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .benefit-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .benefit-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+      color: var(--accent);
+      transition: transform .3s, box-shadow .3s;
+    }
+    .benefit-card:hover .benefit-icon {
+      transform: scale(1.1) rotate(-3deg);
+      box-shadow: 0 8px 24px rgba(232,96,46,.25);
+    }
+    .benefit-icon svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Icon background variants */
+    .benefit-icon.blue { background: linear-gradient(135deg, #EEF2FF, #E0E7FF); color: #6366F1; }
+    .benefit-icon.green { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #10B981; }
+    .benefit-icon.orange { background: linear-gradient(135deg, #FFF7ED, #FFEDD5); color: var(--accent); }
+    .benefit-icon.purple { background: linear-gradient(135deg, #F5F3FF, #EDE9FE); color: #8B5CF6; }
+    .benefit-icon.red { background: linear-gradient(135deg, #FEF2F2, #FEE2E2); color: #EF4444; }
+    .benefit-icon.teal { background: linear-gradient(135deg, #F0FDFA, #CCFBF1); color: #14B8A6; }
+    .benefit-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; font-family: 'Montserrat', sans-serif; }
+    .benefit-card p { font-size: .925rem; color: var(--text-secondary); line-height: 1.65; }
+
+    /* ===== SERVICES ===== */
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 24px; }
+    .service-card {
+      background: var(--card-bg); border-radius: var(--radius); padding: 40px 32px;
+      box-shadow: var(--shadow); border: 1px solid var(--border);
+      display: flex; flex-direction: column; position: relative;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .service-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .service-card.popular { border: 2px solid var(--accent); }
+    .popular-tag {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #fff; font-size: .72rem; font-weight: 700;
+      padding: 5px 18px; border-radius: 100px; text-transform: uppercase; letter-spacing: .8px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .service-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 20px;
+    }
+    .service-icon.blue { background: linear-gradient(135deg, #EEF2FF, #E0E7FF); }
+    .service-icon.green { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); }
+    .service-icon.orange { background: linear-gradient(135deg, #FFF7ED, #FFEDD5); }
+    .service-icon.purple { background: linear-gradient(135deg, #F5F3FF, #EDE9FE); }
+    .service-icon.red { background: linear-gradient(135deg, #FEF2F2, #FEE2E2); }
+    .service-icon.teal { background: linear-gradient(135deg, #F0FDFA, #CCFBF1); color: #14B8A6; }
+    .service-icon svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .service-card:hover .service-icon {
+      transform: scale(1.1) rotate(-3deg);
+      box-shadow: 0 8px 24px rgba(232,96,46,.25);
+      transition: transform .3s, box-shadow .3s;
+    }
+    .service-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; font-family: 'Montserrat', sans-serif; }
+    .service-card .desc { font-size: .9rem; color: var(--text-secondary); margin-bottom: 24px; flex-grow: 1; line-height: 1.65; }
+    .price { font-size: 2rem; font-weight: 800; color: var(--primary); font-family: 'Montserrat', sans-serif; letter-spacing: -1px; margin-bottom: 4px; }
+    .price-note { font-size: .8rem; color: var(--text-secondary); margin-bottom: 24px; }
+
+    /* ===== PROOF ===== */
+    .proof-stats-row { display: flex; justify-content: center; gap: 60px; margin-bottom: 60px; flex-wrap: wrap; }
+    .proof-stat { text-align: center; }
+    .proof-stat-num { font-size: 2.4rem; font-weight: 900; color: var(--primary); font-family: 'Montserrat', sans-serif; letter-spacing: -1px; }
+    .proof-stat-label { font-size: .85rem; color: var(--text-secondary); margin-top: 2px; }
+
+    .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+    .review-card {
+      background: var(--card-bg); border-radius: var(--radius); padding: 32px;
+      box-shadow: var(--shadow); border: 1px solid var(--border);
+      transition: transform .2s;
+    }
+    .review-card:hover { transform: translateY(-4px); }
+    .review-stars { color: var(--accent); font-size: .9rem; margin-bottom: 14px; letter-spacing: 3px; }
+    .review-text { font-size: .95rem; line-height: 1.7; margin-bottom: 22px; color: var(--text); }
+    .reviewer { display: flex; align-items: center; gap: 14px; }
+    .reviewer-avatar {
+      width: 95px; height: 95px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      overflow: hidden;
+    }
+    .reviewer-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .reviewer-avatar.a1 { background: linear-gradient(135deg, #E8602E, #F59E0B); }
+    .reviewer-avatar.a2 {
+  background: linear-gradient(135deg, #0EA5A0, #3B82F6);
+}
+    .reviewer-avatar.a3 { background: linear-gradient(135deg, #8B5CF6, #EC4899); }
+    .reviewer-name { font-weight: 600; font-size: .925rem; font-family: 'Montserrat', sans-serif; }
+    .reviewer-job { font-size: .78rem; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ===== FAQ ===== */
+    .faq-list { max-width: 780px; margin: 0 auto; }
+    .faq-item {
+      background: var(--card-bg); border-radius: var(--radius-sm); margin-bottom: 12px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border); overflow: hidden;
+      transition: box-shadow .2s;
+    }
+    .faq-item:hover { box-shadow: var(--shadow); }
+    .faq-q {
+      width: 100%; padding: 22px 26px; display: flex; justify-content: space-between;
+      align-items: center; background: none; border: none; font-family: 'Montserrat', sans-serif;
+      font-size: 1rem; font-weight: 600; color: var(--text); cursor: pointer; text-align: left; gap: 16px;
+      box-shadow: none;
+    }
+    .faq-q .arrow { font-size: 1.1rem; transition: transform .3s; flex-shrink: 0; color: var(--accent); }
+    .faq-item.open .arrow { transform: rotate(180deg); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease; padding: 0 26px; font-size: .935rem; color: var(--text-secondary); line-height: 1.7; }
+    .faq-item.open .faq-a { max-height: 300px; padding: 0 26px 22px; }
+
+    /* ===== FORM ===== */
+    .form-section {
+      background: linear-gradient(135deg, #0F0F1A 0%, #1a1a2e 50%, #16213e 100%);
+      color: #fff; border-radius: var(--radius); padding: 70px 56px;
+      max-width: 1140px; margin: 0 auto 100px; position: relative; overflow: hidden;
+    }
+    .form-section::before {
+      content: ''; position: absolute; top: -50%; right: -15%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(232,96,46,.1) 0%, transparent 60%);
+      border-radius: 50%;
+    }
+    .form-section::after {
+      content: ''; position: absolute; bottom: -60%; left: -10%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(14,165,160,.06) 0%, transparent 60%);
+      border-radius: 50%;
+    }
+    .form-section .section-title { color: #fff; }
+    .form-section .section-subtitle { color: rgba(255,255,255,.55); }
+    .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end;
+      position: relative; z-index: 1;
+    }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: .8rem; font-weight: 500; margin-bottom: 6px; opacity: .6; font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+    .form-group input {
+      padding: 16px 20px; border-radius: var(--radius-xs);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06); color: #fff;
+      font-size: 1rem; font-family: inherit; outline: none; transition: border-color .2s;
+    }
+    .form-group input::placeholder { color: rgba(255,255,255,.3); }
+    .form-group input:focus { border-color: var(--accent); }
+    .form-section .btn { height: 54px; white-space: nowrap; padding: 16px 32px; }
+
+    /* ===== FOOTER ===== */
+    footer { background: var(--dark); color: rgba(255,255,255,.45); padding: 70px 0 32px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 56px; margin-bottom: 48px; }
+    .footer-brand .logo { color: #fff; margin-bottom: 16px; display: inline-block; font-size: 1.6rem; }
+    .footer-brand p { font-size: .9rem; line-height: 1.75; max-width: 360px; }
+    .footer-col h4 { color: #fff; font-size: .78rem; font-weight: 700; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Montserrat', sans-serif; }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 10px; }
+    .footer-col a { color: rgba(255,255,255,.45); text-decoration: none; font-size: .9rem; transition: color .2s; }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: .8rem; }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 900px) {
+      .hero-row { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero { padding: 120px 0 70px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-section { padding: 48px 24px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 36px; }
+      section { padding: 70px 0; }
+      .proof-stats-row { gap: 32px; }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    .fade-in { opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  .nav-cta {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent) 0%, #F59E0B 100%);
+      border: none;
+      border-radius: var(--radius-xs);
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s ease;
+      box-shadow: 0 4px 20px rgba(232,96,46,.35);
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(232,96,46,.5);
+      background: linear-gradient(135deg, #d45526 0%, #F59E0B 100%);
+    }
+    .nav-cta:active {
+      transform: translateY(0);
+    }
+    .nav-cta::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s linear infinite;
+    }
+
+    .btn.btn-primary.btn-lg {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-xs);
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s ease;
+      box-shadow: 0 4px 20px rgba(232,96,46,.35);
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+    .btn.btn-primary.btn-lg:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(232,96,46,.5);
+      background: linear-gradient(135deg, #d45526 0%, #F59E0B 100%);
+    }
+    .btn.btn-primary.btn-lg:active {
+      transform: translateY(0);
+    }
+    .btn.btn-primary.btn-lg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s linear infinite;
+    }
+
+  button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+.nav-cta {
+      background: #E8602E;
+      color: #fff;
+      border: none;
+      padding: 11px 13px;
+      font-size: 1.0rem;
+      font-weight: 700;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s ease;
+      box-shadow: 0 4px 20px rgba(232,96,46,.35);
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+            
+  .faq-q {
+    width: 100%; padding: 22px 26px; display: flex;
+    justify-content: space-between; align-items: center;
+    background: none; border: none; font-family: 'Montserrat', sans-serif;
+    font-size: 1rem; font-weight: 600; color: var(--text); cursor: pointer;
+    text-align: left; gap: 16px;
+    box-shadow: none;
+  }
+  .faq-q .arrow { font-size: 1.1rem; transition: transform .3s; flex-shrink: 0; color: var(--accent); }
+  .faq-item.open .arrow { transform: rotate(180deg); }
+
+
+  /* Animated background stripes */
+	@keyframes moveStripes {
+	  0% { background-position: 0 0; }
+	  100% { background-position: 100px 100px; }
+	}
+
+
+	</style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">Налог<span>Флоу</span></a>
+      <ul class="nav-links">
+        <li><a href="#benefits">Преимущества</a></li>
+        <li><a href="#services">Услуги</a></li>
+        <li><a href="#stats">Отзывы</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><button class="nav-cta" onclick="openModal()">Получить консультацию</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="particles" id="particles"></div>
+    <div class="container hero-content">
+      <div class="hero-row">
+        <div>
+          <div class="hero-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Подключён к ФНС через личный кабинет
+          </div>
+          <h1>Получите максимальный <span>налоговый вычет</span> — не упустите тысячи рублей</h1>
+          <p>Оформляю социальные, имущественные вычеты и декларации по доходам. От 2 500 ₽ — подача декларации за год + сопровождение до получения решения налоговой. Вам только документы и доступ к личному кабинету.</p>
+
+          <div class="search-widget">
+            <input type="text" placeholder="Узнайте свой вычет…">
+            <button>Рассчитать</button>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-card-stack">
+            <div class="hero-card-main">
+              <h4>Средний возврат</h4>
+              <div class="big-num"><span>93</span> тыс. ₽</div>
+              <div class="desc">возвращается клиентам в среднем за вычетами</div>
+            </div>
+            <div class="hero-card-float float-1">
+              <div class="float-icon green">✅</div>
+              <span>ДС получен</span>
+            </div>
+            <div class="hero-card-float float-2">
+              <div class="float-icon orange">📄</div>
+              <span>Подана декларация</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BANNER -->
+  <section class="stats" id="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item reveal">
+          <div class="stat-num" data-count="500" data-suffix="+">0</div>
+          <div class="stat-label">успешных клиентов</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-num" data-count="98" data-suffix="%">0</div>
+          <div class="stat-label">деклараций одобрены</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-num" data-count="3" data-suffix=" дн." data-prefix="">0</div>
+          <div class="stat-label">до подачи декларации</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-num" data-count="2.5" data-suffix="к" data-decimals="1">0</div>
+          <div class="stat-label">от стоимости услуги</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFITS -->
+  <section id="benefits">
+    <div class="container center-text">
+      <span class="section-label">Почему выбирают нас</span>
+      <h2 class="section-title">Честный результат без лишних хлопот</h2>
+      <p class="section-subtitle">Работаем под ключ: от сбора документов до получения решения от налоговой</p>
+    </div>
+    <div class="container benefits-grid">
+      <div class="benefit-card fade-in">
+        <div class="benefit-icon orange">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+        </div>
+        <h3>Максимальный вычет</h3>
+        <p>Находим все вычеты, на которые вы имеете право — даже те, о чём не знаете</p>
+      </div>
+      <div class="benefit-card fade-in">
+        <div class="benefit-icon blue">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <h3>Под ключ</h3>
+        <p>Вам не нужно разбираться в законах — подготовим и подадим декларацию сами</p>
+      </div>
+      <div class="benefit-card fade-in">
+        <div class="benefit-icon green">
+          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3>Быстро</h3>
+        <p>Стандартный срок — от 3 рабочих дней после предоставления всех документов</p>
+      </div>
+      <div class="benefit-card fade-in">
+        <div class="benefit-icon purple">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Без рисков</h3>
+        <p>Оформляем всё легально, проверяем каждый документ перед подачей</p>
+      </div>
+      <div class="benefit-card fade-in">
+        <div class="benefit-icon teal">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>На связи 7/7</h3>
+        <p>Консультируем в мессенджерах и по телефону — ответим в течение часа</p>
+      </div>
+      <div class="benefit-card fade-in">
+        <div class="benefit-icon red">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h3>Прозрачный расчёт</h3>
+        <p>Стоимость понятна до начала работы — никаких скрытых доплат</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" style="background:#fff;">
+    <div class="container center-text">
+      <span class="section-label">Услуги</span>
+      <h2 class="section-title">Что мы делаем</h2>
+      <p class="section-subtitle">Стоимость зависит от сложности — финальную сумму озвучим после консультации</p>
+    </div>
+    <div class="container services-grid">
+      <div class="service-card fade-in">
+        <div class="service-icon blue"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+        <h3>Социальные вычеты — обучение</h3>
+        <p class="desc">Вычеты по расходам на обучение: курсы, вуз, переподготовка, детские кружки и секции</p>
+        <div class="price">от 2 500 ₽</div>
+        <p class="price-note">Подача декларации + сопровождение до ДС</p>
+      </div>
+      <div class="service-card fade-in">
+        <div class="service-icon green"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <h3>Социальные вычеты — лечение</h3>
+        <p class="desc">Вычеты по расходам на лечение, медикаменты, стоматологию, санаторно-курортное лечение</p>
+        <div class="price">от 2 500 ₽</div>
+        <p class="price-note">Подача декларации + сопровождение до ДС</p>
+      </div>
+      <div class="service-card fade-in">
+        <div class="service-icon orange"><svg viewBox="0 0 24 24"><path d="M6.5 6.5h11M6.5 17.5h11M6 20v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <h3>Физкультурно-оздоровительные</h3>
+        <p class="desc">Вычет по расходам на оплаченную физкультурную и спортивную деятельность</p>
+        <div class="price">от 2 500 ₽</div>
+        <p class="price-note">Подача декларации + сопровождение до ДС</p>
+      </div>
+      <div class="service-card fade-in">
+        <div class="service-icon purple"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <h3>Имущественные вычеты</h3>
+        <p class="desc">Покупка жилья, строительство, покупка земельного участка, возврат процентов по ипотеке</p>
+        <div class="price">от 3 500 ₽</div>
+        <p class="price-note">Расчёт суммы вычета + подача + сопровождение</p>
+      </div>
+      <div class="service-card fade-in">
+        <div class="service-icon red"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h3>Продажа имущества</h3>
+        <p class="desc">Оформление вычета при продаже квартиры, дома, доли — расчёт и декларация</p>
+        <div class="price">от 3 000 ₽</div>
+        <p class="price-note">Аналитика по доходам + декларация + сопровождение</p>
+      </div>
+      <div class="service-card popular fade-in">
+        <span class="popular-tag">Хит</span>
+        <div class="service-icon teal"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div>
+        <h3>Комплексный пакет</h3>
+        <p class="desc">Все виды вычетов + декларирование доходов + полное сопровождение до получения ДС</p>
+        <div class="price">6 000 ₽</div>
+        <p class="price-note">Индивидуальный расчёт после консультации</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROOF / REVIEWS -->
+  <section id="stats">
+    <div class="container center-text">
+      <span class="section-label">Довольные клиенты</span>
+      <h2 class="section-title">Нам доверяют</h2>
+      <p class="section-subtitle">Уже помогли сотням людей вернуть деньги от налоговой</p>
+    </div>
+    <div class="container">
+      <div class="proof-stats-row">
+        <div class="proof-stat fade-in">
+          <div class="proof-stat-num">500+</div>
+          <div class="proof-stat-label">успешных дел</div>
+        </div>
+        <div class="proof-stat fade-in">
+          <div class="proof-stat-num">98%</div>
+          <div class="proof-stat-label">одобренных деклараций</div>
+        </div>
+        <div class="proof-stat fade-in">
+          <div class="proof-stat-num">4.9</div>
+          <div class="proof-stat-label">средняя оценка</div>
+        </div>
+      </div>
+    </div>
+    <div class="container reviews-grid">
+      <div class="review-card fade-in">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Хотела оформить вычет за обучение магистерской программы — самостоятельно не разобралась бы. Подали декларацию за 4 дня, деньги вернули в течение месяца. Очень благодарна!»</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar a1"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Reviewer"></div>
+          <div><div class="reviewer-name">Анна К.</div><div class="reviewer-job">Москва, вычет на обучение</div></div>
+        </div>
+      </div>
+      <div class="review-card fade-in">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Приобрели квартиру в ипотеку — возврат процентов + вычет за саму квартиру. Два вычета в одном заявлении. Все документы собрали сами, мне нужно было только паспорт и договор.»</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar a2"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Reviewer"></div>
+          <div><div class="reviewer-name">Дмитрий М.</div><div class="reviewer-job">Санкт-Петербург, имущественные вычеты</div></div>
+        </div>
+      </div>
+      <div class="review-card fade-in">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Продал старую квартиру и не знал, что нужно подавать декларацию. Обратился — оформили всё за неделю. Никаких проблем с налоговой, всё проверили и одобрили.»</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar a3"><img src="https://randomuser.me/api/portraits/women/29.jpg" alt="Reviewer"></div>
+          <div><div class="reviewer-name">Елена Р.</div><div class="reviewer-job">Краснодар, продажа имущества</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" style="background:#fff;">
+    <div class="container center-text">
+      <span class="section-label">Вопросы и ответы</span>
+      <h2 class="section-title">Часто спрашивают</h2>
+      <p class="section-subtitle">Если не нашли ответ — напишите или позвоните, всё расскажем</p>
+    </div>
+    <div class="container" style="max-width:780px;">
+      <div class="faq-list">
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Нужно ли мне иметь право на вычет, чтобы обратиться? <span class="arrow">▾</span></button>
+          <div class="faq-a">Нет — мы бесплатно проконсультируемся и скажем, положен ли вам вычет. Оплата — только после того, как вы решите продолжить. Мы проверяем ваши документы и заранее предупредим, если вычет невозможен.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Какие документы мне нужны? <span class="arrow">▾</span></button>
+          <div class="faq-a">Паспорт, ИНН, СНИЛС и документы, подтверждающие расходы (чеки, договоры, справки). Точный список вышлем вам после заявки — он зависит от типа вычета.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">А я могу сам подать декларацию через сайт налоговой? <span class="arrow">▾</span></button>
+          <div class="faq-a">Можно, но мы помогаем определить вычеты, которые вы могли упустить, проверяем корректность расчётов и решаем вопросы с ФНС. Многие ошибки при самостоятельной подаче приводят к отказу или задержке возврата.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Сколько времени занимает весь процесс? <span class="arrow">▾</span></button>
+          <div class="faq-a">После предоставления всех документов — от 3 рабочих дней на подачу декларации. Возврат денег от ФНС занимает до 3 месяцев, максимальный срок — до 6 месяцев с налогового периода.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Как вы работаете, если я в другом городе? <span class="arrow">▾</span></button>
+          <div class="faq-a">Всё дистанционно: переписка в мессенджерах, отправка документов по фото/скану, доступ к личному кабинету на сайте ФНС. Работаем по всей России.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="dark-section">
+    <div class="container">
+      <div class="about-row">
+        <div class="about-image">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&facearea=auto"
+               alt="Налоговый консультант"
+               class="about-img">
+        </div>
+        <div class="about-content">
+          <div class="section-label">О нас</div>
+          <h2 class="section-title">Социальные и имущественные налоговые вычеты</h2>
+          <div class="about-text">
+            <p><strong>Социальные налоговые вычеты</strong></p>
+            <ul class="about-list">
+              <li>по расходам на обучение</li>
+              <li>по расходам на лечение и приобретение медикаментов</li>
+              <li>социальный вычет по расходам на физкультурно-оздоровительные услуги</li>
+            </ul>
+
+            <p><strong>Имущественные налоговые вычеты</strong></p>
+            <ul class="about-list">
+              <li>продажа имущества</li>
+              <li>покупка жилья (дома, квартиры, комнаты и т.п.) и уплата процентов по ипотеке</li>
+              <li>строительство жилья или приобретение земельного участка для этих целей</li>
+            </ul>
+
+            <p><strong>Декларирование доходов</strong></p>
+            <ul class="about-list">
+              <li>продажа движимого и недвижимого имущества, с применением соответствующих вычетов</li>
+            </ul>
+
+            <p class="about-note">Всё это может суммироваться и от того стоимость услуг будет "плясать", этот перечень и от 2,5к в это входит подача декларации за год и мое сопровождение под ключ до момента получения клиентом ДС от налоговой, от клиента только документы по списку от меня и логин/пароль от личного кабинета в налоговой <a href="https://lkfl2.nalog.ru/lkfl/" target="_blank">https://lkfl2.nalog.ru/lkfl/</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <section id="calculator">
+    <div class="container">
+      <div class="section-label">Услуги</div>
+      <h2 class="section-title">Рассчитайте стоимость ваших услуг</h2>
+      <p class="section-subtitle">Выберите нужные услуги - стоимость рассчитается автоматически</p>
+
+      <div class="calculator-grid">
+        <div class="calc-service">
+          <div class="calc-checkbox" data-service="education" data-price="2500">
+            <input type="checkbox" id="calc-education">
+            <label for="calc-education">Социальный вычет — обучение</label>
+            <span class="calc-price">от 2 500 ₽</span>
+          </div>
+          <p class="calc-desc">Курсы, вуз, переподготовка, детские кружки и секции</p>
+        </div>
+
+        <div class="calc-service">
+          <div class="calc-checkbox" data-service="treatment" data-price="2500">
+            <input type="checkbox" id="calc-treatment">
+            <label for="calc-treatment">Социальный вычет — лечение</label>
+            <span class="calc-price">от 2 500 ₽</span>
+          </div>
+          <p class="calc-desc">Лечение, медикаменты, стоматология, санаторно-курортное лечение</p>
+        </div>
+
+        <div class="calc-service">
+          <div class="calc-checkbox" data-service="fitness" data-price="2500">
+            <input type="checkbox" id="calc-fitness">
+            <label for="calc-fitness">Социальный вычет — физкультурно-оздоровительные</label>
+            <span class="calc-price">от 2 500 ₽</span>
+          </div>
+          <p class="calc-desc">Оплата физкультурной и спортивной деятельности</p>
+        </div>
+
+        <div class="calc-service">
+          <div class="calc-checkbox" data-service="property" data-price="3500">
+            <input type="checkbox" id="calc-property">
+            <label for="calc-property">Имущественные вычеты</label>
+            <span class="calc-price">от 3 500 ₽</span>
+          </div>
+          <p class="calc-desc">Покупка жилья, строительство, земельный участок, проценты по ипотеке</p>
+        </div>
+
+        <div class="calc-service">
+          <div class="calc-checkbox" data-service="sale" data-price="3000">
+            <input type="checkbox" id="calc-sale">
+            <label for="calc-sale">Продажа имущества</label>
+            <span class="calc-price">от 3 000 ₽</span>
+          </div>
+          <p class="calc-desc">Оформление вычета при продаже квартиры, дома, доли</p>
+        </div>
+
+        <div class="calc-service calc-service-featured">
+          <div class="calc-checkbox" data-service="comprehensive" data-price="6000">
+            <input type="checkbox" id="calc-comprehensive">
+            <label for="calc-comprehensive">Комплексный пакет (всё включено)</label>
+            <span class="calc-price">6 000 ₽</span>
+          </div>
+          <p class="calc-desc">Все виды вычетов + декларирование доходов + полное сопровождение</p>
+          <div class="calc-badge">Популярно</div>
+        </div>
+      </div>
+
+      <div class="calculator-total">
+        <div class="total-info">
+          <div class="total-label">Итого:</div>
+          <div class="total-price" id="total-price">0 ₽</div>
+        </div>
+        <button type="button" class="btn btn-primary" id="calc-submit">
+          Получить услугу
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section id="contact">
+    <div class="container">
+      <div class="form-section">
+        <div class="center-text">
+          <span class="section-label" style="color:rgba(255,255,255,.5);">Бесплатная консультация</span>
+          <h2 class="section-title">Оставьте заявку — расскажем, какой вычет вам положен</h2>
+          <p class="section-subtitle">Ни обязательств, ни скрытых платежей — только ответы на ваши вопросы</p>
+        </div>
+        <form class="form-grid" onsubmit="handleSubmit(event)">
+          <div class="form-group">
+            <label for="name">Ваше имя</label>
+            <input type="text" id="name" placeholder="Алексей" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Телефон</label>
+            <input type="tel" id="phone" placeholder="+7 (999) 123-45-67" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg">Получить консультацию</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo">Налог<span>Флоу</span></a>
+          <p>Помогаем физическим лицам получить налоговые вычеты любого типа. Работаем дистанционно по всей России. Каждый клиент получает персональный расчёт и сопровождение до результата.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Услуги</h4>
+          <ul>
+            <li><a href="#services">Социальные вычеты</a></li>
+            <li><a href="#services">Имущественные вычеты</a></li>
+            <li><a href="#services">Продажа имущества</a></li>
+            <li><a href="#services">Декларирование доходов</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Контакты</h4>
+          <ul>
+            <li>Москва, ул. Примерная, 15</li>
+            <li>Пн–Пт: 9:00–20:00</li>
+            <li>Сб: 10:00–16:00</li>
+            <li><a href="tel:+74951234567">+7 (495) 123-45-67</a></li>
+            <li><a href="mailto:info@nalogflow.ru">info@nalogflow.ru</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2024 НалогФлоу. Все права защищены.</span>
+        <span>ИП Флоу · ОГРНИП 1234567890123</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <h3 class="modal-title">Оставьте заявку</h3>
+      <p class="modal-subtitle">Расскажем, какой вычет вам положен. Бесплатно и без обязательств.</p>
+
+      <!-- Form section (default) -->
+      <div id="modal-form-section">
+        <form onsubmit="handleModalSubmit(event)">
+          <div class="form-group">
+            <label for="modal-name">Ваше имя</label>
+            <input type="text" id="modal-name" placeholder="Алексей" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-phone">Телефон</label>
+            <input type="tel" id="modal-phone" placeholder="+7 (999) 123-45-67" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Получить консультацию</button>
+        </form>
+      </div>
+
+      <!-- Service list section (hidden by default) -->
+      <div id="modal-service-section" style="display: none; text-align: left;">
+        <p class="modal-subtitle" style="margin-bottom: 20px;">Вы выбрали следующие услуги:</p>
+        <ul id="modal-service-list" style="margin: 0 0 20px 20px; padding: 0; list-style: none;">
+          <!-- Services will be inserted here by JavaScript -->
+        </ul>
+        <button type="button" class="btn btn-primary" onclick="closeModal(); document.getElementById('modal-service-section').style.display = 'none'; document.getElementById('modal-form-section').style.display = 'block';">
+          Выбрать другие услуги
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // FAQ accordion
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    // Particles in hero
+    (function () {
+      const container = document.getElementById('particles');
+      if (!container) return;
+      const count = 25;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
+        p.style.animationDuration = (Math.random() * 10 + 8) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        p.style.opacity = Math.random() * 0.4 + 0.1;
+        const colors = ['rgba(232,96,46,.25)', 'rgba(14,165,160,.2)', 'rgba(255,255,255,.12)'];
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        container.appendChild(p);
+      }
+    })();
+
+    // Counter animation for stats
+    function animateCounter(el) {
+      const target = parseFloat(el.dataset.count);
+      const decimals = parseInt(el.dataset.decimals || 0);
+      const suffix = el.dataset.suffix || '';
+      const duration = 2000;
+      const start = performance.now();
+
+      function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = (target * ease).toFixed(decimals);
+        el.textContent = current + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Reveal + Counter observer
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          // Stagger delay based on index among siblings
+          const siblings = Array.from(el.parentElement.children);
+          const idx = siblings.indexOf(el);
+          if (idx > 0) {
+            el.style.transitionDelay = (idx * 0.1) + 's';
+          }
+          el.classList.add('revealed');
+          // Counter animation for stat numbers
+          const counter = el.querySelector('.stat-num');
+          if (counter && counter.dataset.count) {
+            animateCounter(counter);
+          }
+          revealObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    // Observe both old fade-in and new reveal elements
+    document.querySelectorAll('.reveal, .fade-in').forEach(el => {
+      el.classList.add('revealed');
+      if (el.classList.contains('fade-in')) el.classList.add('visible');
+      revealObserver.observe(el);
+    });
+
+    // Mouse parallax on hero visual
+    const hero = document.querySelector('.hero');
+    const heroVisual = document.querySelector('.hero-visual');
+    if (hero && heroVisual) {
+      hero.addEventListener('mousemove', (e) => {
+        const rect = hero.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        heroVisual.style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+        heroVisual.style.transition = 'transform .3s ease-out';
+      });
+      hero.addEventListener('mouseleave', () => {
+        heroVisual.style.transform = '';
+        heroVisual.style.transition = 'transform 1s ease-out';
+      });
+    }
+
+    // Phone masks
+    IMask(document.getElementById('modal-phone'), {
+      mask: '+7 (000) 000-00-00',
+      dispatch: function (appended, dynamicMasked) {
+        var prev = dynamicMasked.value.slice(0, dynamicMasked.cursor);
+        var next = appended;
+        if (prev.startsWith('8')) { next = '7' + prev.slice(1) + next; }
+        return next;
+      }
+    });
+    IMask(document.getElementById('phone'), {
+      mask: '+7 (000) 000-00-00',
+      dispatch: function (appended, dynamicMasked) {
+        var prev = dynamicMasked.value.slice(0, dynamicMasked.cursor);
+        var next = appended;
+        if (prev.startsWith('8')) { next = '7' + prev.slice(1) + next; }
+        return next;
+      }
+    });
+
+    // Modal
+    function openModal() {
+      document.getElementById('modal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    function closeModalOutside(e) {
+      if (e.target === document.getElementById('modal')) closeModal();
+    }
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    function handleModalSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('modal-name').value;
+      const phone = document.getElementById('modal-phone').value;
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.textContent = '✓ Заявка отправлена!';
+      btn.disabled = true;
+      btn.style.background = '#0EA5A0';
+      setTimeout(() => {
+        alert('Спасибо, ' + name + '! Мы свяжемся с вами в ближайшее время по телефону ' + phone + '.\n\nЕсли вы уже хотите быстро получить ответ — пишите в Telegram: @nalogflow_support');
+        closeModal();
+        e.target.reset();
+        btn.textContent = 'Получить консультацию';
+        btn.disabled = false;
+        btn.style.background = '';
+      }, 400);
+    }
+
+    // Bottom form → open modal instead of inline
+    function handleSubmit(e) {
+      e.preventDefault();
+      openModal();
+    }
+
+    // Calculator logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const checkboxes = document.querySelectorAll('.calc-checkbox input');
+      const totalPriceEl = document.getElementById('total-price');
+      const comprehensiveCheckbox = document.getElementById('calc-comprehensive');
+
+      function calculateTotal() {
+        // If comprehensive package is selected, show only its price
+        if (comprehensiveCheckbox.checked) {
+          totalPriceEl.textContent = '6 000 ₽';
+          // Uncheck all other checkboxes
+          checkboxes.forEach(cb => {
+            if (cb !== comprehensiveCheckbox) {
+              cb.checked = false;
+            }
+          });
+          return;
+        }
+
+        // Otherwise, sum selected individual services
+        let total = 0;
+        checkboxes.forEach(checkbox => {
+          if (checkbox.checked && checkbox !== comprehensiveCheckbox) {
+            const price = parseInt(checkbox.parentElement.dataset.price);
+            total += price;
+          }
+        });
+
+        totalPriceEl.textContent = total.toLocaleString('ru-RU') + ' ₽';
+      }
+
+      // Add event listeners to all checkboxes
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', calculateTotal);
+      });
+
+      // Make service blocks clickable
+      document.querySelectorAll('.calc-service').forEach(serviceBlock => {
+        serviceBlock.addEventListener('click', (e) => {
+          // Don't toggle if clicking directly on the checkbox or label (to avoid double toggle)
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+            return;
+          }
+          const checkbox = serviceBlock.querySelector('.calc-checkbox input');
+          if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            calculateTotal();
+          }
+        });
+      });
+
+      // Initialize total
+      calculateTotal();
+    });
+
+    // Get Services button from calculator
+    document.getElementById('calc-submit').addEventListener('click', function() {
+      const selectedServices = [];
+      document.querySelectorAll('.calc-checkbox input:checked').forEach(checkbox => {
+        if (checkbox.id !== 'calc-comprehensive' || !document.getElementById('calc-comprehensive').checked) {
+          // For individual services or if comprehensive is not checked
+          const label = document.querySelector(`label[for="${checkbox.id}"]`);
+          if (label) {
+            selectedServices.push(label.textContent.trim());
+          }
+        }
+      });
+
+      // If comprehensive is checked, show that instead
+      if (document.getElementById('calc-comprehensive').checked) {
+        selectedServices.length = 0; // Clear array
+        selectedServices.push('Комплексный пакет (всё включено)');
+      }
+
+      // Handle case where no services are selected
+      if (selectedServices.length === 0) {
+        alert('Пожалуйста, выберите хотя бы одну услугу');
+        return;
+      }
+
+      // Store selected services in modal
+      const modalServiceList = document.getElementById('modal-service-list');
+      if (modalServiceList) {
+        modalServiceList.innerHTML = selectedServices.map(service => `<li>${service}</li>`).join('');
+      }
+
+      // Show service list in modal, hide regular form
+      const modalServiceSection = document.getElementById('modal-service-section');
+      const modalFormSection = document.getElementById('modal-form-section');
+      if (modalServiceSection && modalFormSection) {
+        modalServiceSection.style.display = 'block';
+        modalFormSection.style.display = 'none';
+      }
+
+      openModal();
+    });
+  </script>
+</body>
+</html>
