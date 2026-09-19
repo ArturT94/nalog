@@ -351,7 +351,7 @@
       font-size: .85rem; font-weight: 600; color: var(--text);
     }
     .hero-card-float.float-1 { top: -20px; right: -30px; z-index: 3; }
-    .hero-card-float.float-2 { bottom: -20px; left: -30px; z-index: 3; }
+    .hero-card-float.float-2 { left: -30px; z-index: 3; }
     .float-icon {
       width: 36px; height: 36px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
@@ -885,7 +885,57 @@ input[type="reset"],
 	}
 
 
-	</style>
+	@keyframes pricePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.price-animate {
+  animation: pricePulse 0.5s ease;
+}
+
+/* Custom checkboxes for calculator - label ::before */
+.calc-checkbox label::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  display: inline-block;
+  transition: all .2s ease;
+  vertical-align: middle;
+}
+
+/* Checked state */
+.calc-checkbox input:checked + label::before {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 13l4 4L19 7' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px;
+}
+
+/* Hover effect for the label */
+.calc-checkbox label:hover::before {
+  border-color: var(--accent);
+}
+
+/* Hide the native checkbox */
+.calc-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Optional: bold label when checked */
+.calc-checkbox input:checked + label {
+  font-weight: 700;
+  color: var(--accent);
+}
+</style>
 </head>
 <body>
 
@@ -932,11 +982,11 @@ input[type="reset"],
               <div class="desc">возвращается клиентам в среднем за вычетами</div>
             </div>
             <div class="hero-card-float float-1">
-              <div class="float-icon green">✅</div>
+              <div class="float-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l6 6 10-10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <span>ДС получен</span>
             </div>
             <div class="hero-card-float float-2">
-              <div class="float-icon orange">📄</div>
+              <div class="float-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zM9 4h8v2H9V4zm0 7h8v2H9v-2zM9 12h6v2H9v-2z"/></svg></div>
               <span>Подана декларация</span>
             </div>
           </div>
@@ -1201,7 +1251,7 @@ input[type="reset"],
 
   <!-- CALCULATOR -->
   <section id="calculator">
-    <div class="container">
+    <div class="container center-text">
       <div class="section-label">Услуги</div>
       <h2 class="section-title">Рассчитайте стоимость ваших услуг</h2>
       <p class="section-subtitle">Выберите нужные услуги - стоимость рассчитается автоматически</p>
@@ -1416,7 +1466,25 @@ input[type="reset"],
     }
 
     // Reveal + Counter observer
-    const revealObserver = new IntersectionObserver((entries) => {
+    function animateNumberUpdate(el, start, end, decimals, suffix, duration) {
+  const target = parseFloat(end);
+  const startVal = parseFloat(start);
+  const dec = parseInt(decimals || 0);
+  const suf = suffix || '';
+  const dur = duration || 2000;
+  const startTime = performance.now();
+
+  function step(now) {
+    const progress = Math.min((now - startTime) / dur, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = (startVal + (target - startVal) * ease).toFixed(dec);
+    el.textContent = current + suf;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+const revealObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const el = entry.target;
@@ -1524,17 +1592,24 @@ input[type="reset"],
       const checkboxes = document.querySelectorAll('.calc-checkbox input');
       const totalPriceEl = document.getElementById('total-price');
       const comprehensiveCheckbox = document.getElementById('calc-comprehensive');
+      let currentTotal = 0;
 
       function calculateTotal() {
         // If comprehensive package is selected, show only its price
         if (comprehensiveCheckbox.checked) {
-          totalPriceEl.textContent = '6 000 ₽';
+          const newTotal = 6000;
+          animateNumberUpdate(totalPriceEl, currentTotal, newTotal, 0, ' ₽', 1000);
+          currentTotal = newTotal;
           // Uncheck all other checkboxes
           checkboxes.forEach(cb => {
             if (cb !== comprehensiveCheckbox) {
               cb.checked = false;
             }
           });
+          // Trigger price animation
+          totalPriceEl.classList.remove('price-animate');
+          void totalPriceEl.offsetWidth;
+          totalPriceEl.classList.add('price-animate');
           return;
         }
 
@@ -1547,7 +1622,12 @@ input[type="reset"],
           }
         });
 
-        totalPriceEl.textContent = total.toLocaleString('ru-RU') + ' ₽';
+        animateNumberUpdate(totalPriceEl, currentTotal, total, 0, ' ₽', 1000);
+        currentTotal = total;
+        // Trigger price animation
+        totalPriceEl.classList.remove('price-animate');
+        void totalPriceEl.offsetWidth;
+        totalPriceEl.classList.add('price-animate');
       }
 
       // Add event listeners to all checkboxes
