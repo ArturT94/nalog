@@ -935,6 +935,155 @@ input[type="reset"],
   font-weight: 700;
   color: var(--accent);
 }
+/* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(232,96,46,.05);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-hover);
+    }
+    /* Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) rgba(232,96,46,.05);
+    }
+    /* Advantages section styles */
+    .advantages {
+      padding: 100px 0;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      height: auto;
+      min-height: 100vh;
+    }
+    .advantages-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      position: relative;
+      height: 100%;
+    }
+    .advantage-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 60px 40px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      width: 100%;
+      margin: 0;
+      position: relative;
+      transition: transform .8s ease, opacity .8s ease;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      text-align: center;
+    }
+    .advantage-card:nth-child(1) {
+      transform: translateY(0%);
+      opacity: 1;
+      z-index: 6;
+    }
+    .advantage-card:nth-child(2) {
+      transform: translateY(10%);
+      opacity: 0.9;
+      z-index: 5;
+    }
+    .advantage-card:nth-child(3) {
+      transform: translateY(20%);
+      opacity: 0.8;
+      z-index: 4;
+    }
+    .advantage-card:nth-child(4) {
+      transform: translateY(30%);
+      opacity: 0.7;
+      z-index: 3;
+    }
+    .advantage-card:nth-child(5) {
+      transform: translateY(40%);
+      opacity: 0.6;
+      z-index: 2;
+    }
+    .advantage-card:nth-child(6) {
+      transform: translateY(50%);
+      opacity: 0.5;
+      z-index: 1;
+    }
+    .advantage-card.active {
+      transform: translateY(0%);
+      opacity: 1;
+      z-index: 10;
+    }
+    .advantage-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+      color: var(--accent);
+      transition: transform .4s ease, box-shadow .4s ease;
+    }
+    .advantage-card:hover .advantage-icon {
+      transform: scale(1.1) rotate(-2deg);
+      box-shadow: 0 12px 32px rgba(232,96,46,.3);
+    }
+    .advantage-icon svg {
+      width: 36px;
+      height: 36px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .advantage-icon.blue {
+      background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+      color: #6366F1;
+    }
+    .advantage-icon.green {
+      background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+      color: #10B981;
+    }
+    .advantage-icon.orange {
+      background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+      color: var(--accent);
+    }
+    .advantage-icon.purple {
+      background: linear-gradient(135deg, #F5F3FF, #EDE9FE);
+      color: #8B5CF6;
+    }
+    .advantage-icon.red {
+      background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+      color: #EF4444;
+    }
+    .advantage-icon.teal {
+      background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+      color: #14B8A6;
+    }
+    .advantage-card h3 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      font-family: 'Montserrat', sans-serif;
+      line-height: 1.3;
+    }
+    .advantage-card p {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin: 0;
+      padding: 0 20px;
+    }
 </style>
 </head>
 <body>
@@ -943,12 +1092,13 @@ input[type="reset"],
   <nav>
     <div class="container">
       <a href="#" class="logo">Налог<span>Флоу</span></a>
+      <!-- Desktop menu (hidden on mobile) -->
       <ul class="nav-links">
         <li><a href="#benefits">Преимущества</a></li>
         <li><a href="#services">Услуги</a></li>
         <li><a href="#stats">Отзывы</a></li>
         <li><a href="#faq">FAQ</a></li>
-        <li><button class="nav-cta" onclick="openModal()">Получить консультацию</button></li>
+        <li><button class="nav-cta" onclick="modalType = 'consultation'; openModal()">Получить консультацию</button></li>
       </ul>
     </div>
   </nav>
@@ -986,7 +1136,7 @@ input[type="reset"],
               <span>ДС получен</span>
             </div>
             <div class="hero-card-float float-2">
-              <div class="float-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zM9 4h8v2H9V4zm0 7h8v2H9v-2zM9 12h6v2H9v-2z"/></svg></div>
+              <div class="float-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4H4c-1.1 0-2 .9-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6c0-1.1-.9-2-2-2h-8zM2 6v12h16V6zM4 8h8v2H4zm0 4h8v2H4zm0 4h8v2H4z"/></svg></div>
               <span>Подана декларация</span>
             </div>
           </div>
@@ -1402,24 +1552,27 @@ input[type="reset"],
             <label for="modal-phone">Телефон</label>
             <input type="tel" id="modal-phone" placeholder="+7 (999) 123-45-67" required>
           </div>
+
+          <!-- Service selection (hidden by default, shown for service button) -->
+          <div id="modal-service-selection" style="display: none; margin-bottom: 16px;">
+            <label for="modal-service" class="form-label" style="font-size: .8rem; font-weight: 500; margin-bottom: 6px; opacity: .6; font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 1px;">Выбранные услуги</label>
+            <div id="modal-selected-services" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-xs); padding: 12px 16px; min-height: 40px; color: rgba(255,255,255,.8); font-size: .9rem;">
+              Нет выбранных услуг
+            </div>
+            <input type="hidden" id="modal-services-input" name="services" />
+          </div>
+
           <button type="submit" class="btn btn-primary">Получить консультацию</button>
         </form>
       </div>
 
-      <!-- Service list section (hidden by default) -->
-      <div id="modal-service-section" style="display: none; text-align: left;">
-        <p class="modal-subtitle" style="margin-bottom: 20px;">Вы выбрали следующие услуги:</p>
-        <ul id="modal-service-list" style="margin: 0 0 20px 20px; padding: 0; list-style: none;">
-          <!-- Services will be inserted here by JavaScript -->
-        </ul>
-        <button type="button" class="btn btn-primary" onclick="closeModal(); document.getElementById('modal-service-section').style.display = 'none'; document.getElementById('modal-form-section').style.display = 'block';">
-          Выбрать другие услуги
-        </button>
-      </div>
-    </div>
+          </div>
   </div>
 
   <script>
+    // Track modal type: 'consultation' or 'service'
+    let modalType = 'consultation';
+
     // FAQ accordion
     function toggleFaq(btn) {
       const item = btn.closest('.faq-item');
@@ -1553,6 +1706,14 @@ const revealObserver = new IntersectionObserver((entries) => {
     function openModal() {
       document.getElementById('modal').classList.add('active');
       document.body.style.overflow = 'hidden';
+
+      // Show/hide service selection based on modal type
+      const serviceSelection = document.getElementById('modal-service-selection');
+      if (modalType === 'service') {
+        serviceSelection.style.display = 'block';
+      } else {
+        serviceSelection.style.display = 'none';
+      }
     }
     function closeModal() {
       document.getElementById('modal').classList.remove('active');
@@ -1567,17 +1728,25 @@ const revealObserver = new IntersectionObserver((entries) => {
       e.preventDefault();
       const name = document.getElementById('modal-name').value;
       const phone = document.getElementById('modal-phone').value;
+      const services = document.getElementById('modal-services-input').value;
       const btn = e.target.querySelector('button[type="submit"]');
       btn.textContent = '✓ Заявка отправлена!';
       btn.disabled = true;
       btn.style.background = '#0EA5A0';
       setTimeout(() => {
-        alert('Спасибо, ' + name + '! Мы свяжемся с вами в ближайшее время по телефону ' + phone + '.\n\nЕсли вы уже хотите быстро получить ответ — пишите в Telegram: @nalogflow_support');
+        let message = 'Спасибо, ' + name + '! Мы свяжемся с вами в ближайшее время по телефону ' + phone;
+        if (services) {
+          message += '\n\nВыбранные услуги: ' + services;
+        }
+        message += '.\n\nЕсли вы уже хотите быстро получить ответ — пишите в Telegram: @nalogflow_support';
+        alert(message);
         closeModal();
         e.target.reset();
         btn.textContent = 'Получить консультацию';
         btn.disabled = false;
         btn.style.background = '';
+        // Reset modal type to consultation for next opening
+        modalType = 'consultation';
       }, 400);
     }
 
@@ -1679,22 +1848,23 @@ const revealObserver = new IntersectionObserver((entries) => {
         return;
       }
 
-      // Store selected services in modal
-      const modalServiceList = document.getElementById('modal-service-list');
-      if (modalServiceList) {
-        modalServiceList.innerHTML = selectedServices.map(service => `<li>${service}</li>`).join('');
-      }
-
-      // Show service list in modal, hide regular form
-      const modalServiceSection = document.getElementById('modal-service-section');
-      const modalFormSection = document.getElementById('modal-form-section');
-      if (modalServiceSection && modalFormSection) {
-        modalServiceSection.style.display = 'block';
-        modalFormSection.style.display = 'none';
+      // Set modal type to service and store selected services
+      modalType = 'service';
+      const modalServicesInput = document.getElementById('modal-services-input');
+      const modalSelectedServices = document.getElementById('modal-selected-services');
+      if (modalServicesInput && modalSelectedServices) {
+        modalServicesInput.value = selectedServices.join(', ');
+        if (selectedServices.length > 0) {
+          modalSelectedServices.textContent = selectedServices.join(', ');
+        } else {
+          modalSelectedServices.textContent = 'Нет выбранных услуг';
+        }
       }
 
       openModal();
     });
   </script>
+</body>
+
 </body>
 </html>
