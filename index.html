@@ -32,7 +32,7 @@
       --shadow-accent: 0 8px 30px rgba(232,96,46,.25);
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
     body {
       font-family: 'Inter', -apple-system, sans-serif;
       color: var(--text);
@@ -349,6 +349,22 @@
       box-shadow: 0 12px 40px rgba(0,0,0,.2);
       display: flex; align-items: center; gap: 12px;
       font-size: .85rem; font-weight: 600; color: var(--text);
+    }
+    .hero-card-float.float-1 {
+      right: 60px;
+    }
+    @media (min-width: 1141px) {
+      .hero-card-float.float-1 {
+        right: calc(1200px - 100vw);
+      }
+    }
+    .hero-card-float.float-2 {
+      left: -60px;
+    }
+    @media (min-width: 1141px) {
+      .hero-card-float.float-2 {
+        left: calc(100vw - 1200px);
+      }
     }
     .hero-card-float.float-1 { top: -20px; right: -30px; z-index: 3; }
     .hero-card-float.float-2 { left: -30px; z-index: 3; }
@@ -774,6 +790,9 @@
       .footer-grid { grid-template-columns: 1fr; gap: 36px; }
       section { padding: 70px 0; }
       .proof-stats-row { gap: 32px; }
+      .faq-q { white-space: normal; }
+      .about-row { grid-template-columns: 1fr; }
+      .about-content { text-align: left; }
     }
 
     /* ===== ANIMATIONS ===== */
@@ -1084,7 +1103,164 @@ input[type="reset"],
       margin: 0;
       padding: 0 20px;
     }
-</style>
+
+    /* Enhanced Hero Mobile Adaptations */
+    /* Additional fixes for hero text not fitting on mobile screens */
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 1.4rem !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.5px !important;
+        word-wrap: break-word;
+      }
+      .hero p {
+        font-size: .85rem !important;
+        line-height: 1.4 !important;
+      }
+      .hero-badge {
+        font-size: .7rem !important;
+        padding: 4px 10px !important;
+      }
+      .search-widget {
+        flex-direction: column !important;
+      }
+      .search-widget input,
+      .search-widget button {
+        width: 100% !important;
+        margin-bottom: 8px !important;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .hero h1 {
+        font-size: 1.2rem !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.3px !important;
+      }
+      .hero p {
+        font-size: .75rem !important;
+        line-height: 1.3 !important;
+      }
+      .hero {
+        padding: 80px 0 30px !important;
+      }
+      .hero-badge {
+        font-size: .65rem !important;
+      }
+      .search-widget input {
+        font-size: .8rem !important;
+        padding: 10px !important;
+      }
+      .search-widget button {
+        font-size: .8rem !important;
+        padding: 10px !important;
+      }
+    }
+
+    @media (max-width: 320px) {
+      .hero h1 {
+        font-size: 1.1rem !important;
+      }
+      .hero p {
+        font-size: .7rem !important;
+      }
+      .hero {
+        padding: 70px 0 25px !important;
+      }
+    }
+/* Mobile Nav */
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: var(--dark);
+  color: #fff;
+  padding-top: 80px;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1100;
+  overflow-y: auto;
+}
+.mobile-nav.active {
+  transform: translateX(0);
+}
+.mobile-nav a {
+  display: block;
+  padding: 16px 24px;
+  color: rgba(255,255,255,.7);
+  text-decoration: none;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.mobile-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,.05);
+}
+.mobile-nav .mobile-cta {
+  margin: 24px;
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+}
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1050;
+}
+.mobile-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Hamburger animation */
+.nav-hamburger {
+  position: relative;
+  width: 24px;
+  height: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.nav-hamburger span {
+  display: block;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.nav-hamburger.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+.nav-hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.nav-hamburger.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Hide horizontal scrollbar */
+    body::-webkit-scrollbar {
+      display: none;
+    }
+    body {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+
+  </style>
 </head>
 <body>
 
@@ -1100,8 +1276,28 @@ input[type="reset"],
         <li><a href="#faq">FAQ</a></li>
         <li><button class="nav-cta" onclick="modalType = 'consultation'; openModal()">Получить консультацию</button></li>
       </ul>
+      <!-- Hamburger menu for mobile -->
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Открыть меню" onclick="toggleMobileNav()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </nav>
+
+  <!-- Mobile Navigation Overlay -->
+  <div class="mobile-nav" id="mobile-nav">
+    <a href="#benefits" onclick="toggleMobileNav()">Преимущества</a>
+    <a href="#services" onclick="toggleMobileNav()">Услуги</a>
+    <a href="#stats" onclick="toggleMobileNav()">Отзывы</a>
+    <a href="#faq" onclick="toggleMobileNav()">FAQ</a>
+    <a href="#calculator" onclick="toggleMobileNav()">Калькулятор</a>
+    <a href="#contact" onclick="toggleMobileNav()">Контакты</a>
+    <a href="#" class="mobile-cta" onclick="toggleMobileNav(); modalType = 'consultation'; openModal();">Получить консультацию</a>
+  </div>
+
+  <!-- Mobile overlay backdrop -->
+  <div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileNav()"></div>
 
   <!-- HERO -->
   <section class="hero" id="hero">
@@ -1585,7 +1781,8 @@ input[type="reset"],
     (function () {
       const container = document.getElementById('particles');
       if (!container) return;
-      const count = 25;
+      // Reduce particle count on mobile for better performance
+      const count = window.innerWidth < 768 ? 8 : 25;
       for (let i = 0; i < count; i++) {
         const p = document.createElement('div');
         p.className = 'particle';
@@ -1722,6 +1919,40 @@ const revealObserver = new IntersectionObserver((entries) => {
     function closeModalOutside(e) {
       if (e.target === document.getElementById('modal')) closeModal();
     }
+
+    // Mobile navigation toggle
+    function toggleMobileNav() {
+      const nav = document.getElementById('mobile-nav');
+      const overlay = document.getElementById('mobile-overlay');
+      const hamburger = document.getElementById('nav-hamburger');
+      const isOpen = nav.classList.contains('active');
+
+      if (isOpen) {
+        nav.classList.remove('active');
+        overlay.classList.remove('active');
+        hamburger.classList.remove('active');
+        document.body.style.overflow = '';
+      } else {
+        nav.classList.add('active');
+        overlay.classList.add('active');
+        hamburger.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    // Close mobile nav on window resize to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        const nav = document.getElementById('mobile-nav');
+        const overlay = document.getElementById('mobile-overlay');
+        const hamburger = document.getElementById('nav-hamburger');
+        nav.classList.remove('active');
+        overlay.classList.remove('active');
+        hamburger.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
     function handleModalSubmit(e) {
